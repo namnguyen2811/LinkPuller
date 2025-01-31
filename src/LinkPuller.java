@@ -59,28 +59,50 @@ public class LinkPuller {
             URL website = new URL(url);
             BufferedReader reader = new BufferedReader(new InputStreamReader(website.openStream()));
             String line;
+            String[] foundLinks = new String[100];
+            int linkCount = 0;
+
 
             while ((line = reader.readLine()) != null) {
-                if(line.contains("https:") && line.contains(searchTerm)){
+                if (line.contains("https:") && line.contains(searchTerm)) {
                     int start = line.indexOf("https:"); //start before the search term
-                    while (start != -1){
-                        int end = line.indexOf("\"", start);
-                        String miniLine = line.substring(start, end);
-                        if (miniLine.contains(searchTerm)){
+                    while (start != -1) {
+                        int end = line.indexOf(" ", start);
+                        if(end == -1){
+                            end = line.indexOf("\"", start);
+                        }
+                        String miniLine;
+                        if (end != -1){
+                            miniLine = line.substring(start, end);
+                        }
+                        else{
+                            miniLine = line.substring(start); //in case line ends with link
+                        }
+                        //check for duplicate links
+                        boolean findDuplicate = false;
+                        for (int i = 0; i < linkCount; i++){
+                            if(foundLinks[i].equals(miniLine)){
+                                findDuplicate = true;
+                                break;
+                            }
+                        }
+                        if(findDuplicate == false){
+                            foundLinks[linkCount] = miniLine;
+                            linkCount++;
                             resultsTextArea.append(miniLine + "\n");
                         }
+
                         start = line.indexOf("https:", end);
                     }
                 }
             }
             reader.close();
 
-            //had an error so I just clicked resolve
+            //had an error so I just clicked resolve and this popped up
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 }
